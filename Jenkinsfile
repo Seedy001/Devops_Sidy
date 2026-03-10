@@ -23,6 +23,7 @@ pipeline {
 
         stage('3. Deploy to Kubernetes') {
             steps {
+	        sh 'minikube image load mon-application:v1'	
                 sh 'kubectl apply -f k8s/deployment.yaml'
                 sh 'kubectl apply -f k8s/service.yaml'
                 sh 'kubectl rollout restart deployment/mon-application'
