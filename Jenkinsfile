@@ -1,35 +1,34 @@
 pipeline {
     agent any
-
     environment {
         APP_NAME = 'mon-application'
         APP_VERSION = "v${BUILD_NUMBER}"
         DOCKER_IMAGE = "${APP_NAME}:${APP_VERSION}"
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
-
     stages {
         stage('1. Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/Seedy001/Devops_Sidy.git'
             }
         }
-
         stage('2. Docker Build') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE} ."
-                sh "docker tag ${DOCKER_IMAGE} ${APP_NAME}:latest"
+                sh """
+                    eval \$(minikube docker-env)
+                    docker build -t ${DOCKER_IMAGE} .
+                    docker tag ${DOCKER_IMAGE} ${APP_NAME}:latest
+                """
             }
         }
-
         stage('3. Deploy to Kubernetes') {
             steps {
-	        sh 'minikube image load mon-application:v1'	
+                sh "sed -i 's|image: mon-application:.*|image: ${DOCKER_IMAGE}|g' k8s/deployment.yaml"
                 sh 'kubectl apply -f k8s/deployment.yaml'
                 sh 'kubectl apply -f k8s/service.yaml'
                 sh 'kubectl rollout restart deployment/mon-application'
             }
         }
-
         stage('4. Verify') {
             steps {
                 sh 'kubectl get pods -l app=mon-application'
