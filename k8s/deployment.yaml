@@ -1,29 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: devops-misid
-  labels:
-    app: devops-misid
+  name: mon-application
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: devops-misid
+      app: mon-application
   template:
     metadata:
       labels:
-        app: devops-misid
+        app: mon-application
     spec:
       containers:
-      - name: devops-misid
-        image: devops-misid:latest
+      - name: mon-application
+        image: mon-application:v1
         imagePullPolicy: Never
         ports:
         - containerPort: 80
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "200m"
